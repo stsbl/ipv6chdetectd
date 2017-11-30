@@ -1,0 +1,19 @@
+Source: ipv6chdetectd
+Section: misc
+Priority: extra
+Maintainer: Stadtteilschule Blankenese <repository@stsbl.de>
+Build-Depends: debhelper (>= 9)
+Standards-Version: 3.9.8
+
+Package: ipv6chdetectd
+Architecture: all
+Depends:
+  ${misc:Depends},
+  ${perl:Depends},
+  iserv-update,
+  libfile-slurp-unicode-perl,
+  stsbl-iserv-config-ipv6,
+Description: IPv6 change detection daemon
+ IPv6 change detection daemon is a daemon which runs iservchk everytime when
+ IPv6 addresses change.
+Tag: suite::iserv, implemented-in::perl

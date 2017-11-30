@@ -1,0 +1,14 @@
+# ipv6chdetectd 
+[Unit]
+Description=Invoke iservchk on IPv6 change
+After=network.target
+
+[Service]
+Type=forking
+RemainAfterExit=yes
+SyslogIdentifier=ipv6chdetectd
+PIDFile=/run/ipv6chdetectd/pid
+ExecStart=/usr/sbin/ipv6chdetectd -d
+
+[Install]
+WantedBy=multi-user.target

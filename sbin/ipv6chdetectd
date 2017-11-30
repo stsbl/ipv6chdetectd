@@ -1,0 +1,89 @@
+#!/usr/bin/perl -T -CSDAL
+
+use warnings;
+use strict;
+use File::Slurp::Unicode;
+use Getopt::Long;
+use POSIX qw(setsid);
+use Sys::Syslog;
+
+undef %ENV;
+
+my $dir_state = "/var/cache/iserv";
+my $fn_state = "$dir_state/ipv6.state";
+my $last_state = "";
+my $prog = "ipv6chdetectd";
+my $dir_run = "/run/$prog";
+my $fn_pid = "$dir_run/pid";
+
+my ($daemon, $help);
+GetOptions("daemon" => \$daemon, "help" => \$help) or $help = 1;
+
+print <<USAGE and exit if @ARGV != 0 || $help;
+Usage: $prog [options]
+Options
+ -d, --daemon           run as daemon
+ -h, --help             show this help
+USAGE
+
+die "must run as root" if $<;
+
+sub logger($)
+{
+  my ($msg) = @_;
+  print "$msg\n";
+  syslog "info", $msg or warn $!;
+}
+
+sub get_current_ipv6_state
+{
+  return join("\n", grep { !/^\s*valid_lft/ } split "\n", qx(/bin/ip -6 addr))."\n";
+}
+
+if ($daemon)
+{
+  chdir "/" or die "chdir: $!\n";
+  defined(my $pid = fork) or die "fork: $!\n";
+  if ($pid)
+  {
+    open my $fp, ">", $fn_pid or die "write pid: $!\n";
+    print $fp "$pid\n";
+    close $fp;
+    exit;
+  }
+  setsid or die $!;
+
+  open STDIN, "/dev/null" or die "redirect stdin: $!\n";
+  open STDOUT, ">/dev/null" or die "redirect stdout: $!\n";
+  open STDERR, ">/dev/null" or die "redirect stderr: $!\n";
+}
+
+$SIG{TERM} = sub {
+  logger "got SIGTERM";
+  exit;
+};
+$SIG{INT} = sub {
+  logger "got SIGINT";
+  exit;
+};
+
+while (1)
+{
+  $last_state = join "", read_file $fn_state if -f $fn_state;
+  my $current_state = get_current_ipv6_state;
+
+  if ($last_state ne $current_state)
+  {
+    logger "Detected ipv6 address change. Invoking 'iservchk -a'.";
+    system "/usr/lib/iserv/sleep_exec_once", "10", "ipv6chdetectd_iservchk", "iservchk", "-a";
+    logger "Updating last known state.";
+    write_file $fn_state, $current_state;
+  }
+  else
+  {
+    logger "No changes detected.";
+  }
+ 
+  logger "Sleeping for 30 seconds.";
+  sleep 30;
+}

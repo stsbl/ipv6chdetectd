@@ -1,0 +1,6 @@
+debian/ipv6chdetectd/*
+debian/ipv6chdetectd.substvars
+debian/ipv6chdetectd.debhelper.log
+debian/files
+debian/debhelper-build-stamp
+debian/*.debhelper

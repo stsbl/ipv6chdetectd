@@ -1,0 +1,8 @@
+#!/bin/sh
+set -e
+
+mkdir -p /run/ipv6chdetectd || true
+chmod 0755 /run/ipv6chdetectd
+chown root:root /run/ipv6chdetectd
+
+#DEBHELPER#
