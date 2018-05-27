@@ -74,8 +74,28 @@ while (1)
 
   if ($last_state ne $current_state)
   {
+    local $ENV{PATH} = "/usr/sbin:/usr/bin:/sbin:/bin";
+    my $rerun = 0;
+
+    system "systemctl", "reset-failed", "wide-dhcpv6-on-ipv6-change.service";
+    logger "Detected ipv6 address change. Restarting wide-dhcpv6-client if running.";
+    system "systemd-run", "--unit=wide-dhcpv6-on-ipv6-change.service",
+	"--setenv=PATH=/usr/sbin:/usr/bin:/sbin:/bin",
+	"/bin/sh", "-c", "/bin/systemctl is-active wide-dhcpv6-client.service && ".
+	"/bin/systemctl restart wide-dhcpv6-client.service || true"
+      and logger "Could not restart wide wide-dhcpv6-client: $!" and $rerun = 1;
+    # wait for wide dhcp client
+    sleep 30;
+
+    system "systemctl", "reset-failed", "iservchk-on-ipv6-change.service";
     logger "Detected ipv6 address change. Invoking 'iservchk -a'.";
-    system "/usr/lib/iserv/sleep_exec_once", "10", "ipv6chdetectd_iservchk", "iservchk", "-a";
+    system "systemd-run", "--unit=iservchk-on-ipv6-change",
+	"--setenv=PATH=/usr/sbin:/usr/bin:/sbin:/bin",
+        "/bin/sh", "-c", "/usr/sbin/iservchk -a || true"
+      and logger "Could not invoke iservchk: $!" and $rerun = 1;
+
+    logger "Scheduled rerun during failures." and next if $rerun;
+
     logger "Updating last known state.";
     write_file $fn_state, $current_state;
   }
