@@ -12,7 +12,7 @@ Depends: ${misc:Depends},
   ${perl:Depends},
   iserv-update,
   libfile-slurp-unicode-perl,
-  stsbl-iserv-config-ipv6,
+  stsbl-iserv-config-ipv6 (>= 19.07.06),
 Xb-Private-IServ-Revision: ${iserv:Revision}
 Description: IPv6 change detection daemon
  IPv6 change detection daemon is a daemon which runs iservchk everytime when
