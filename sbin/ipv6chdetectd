@@ -2,8 +2,8 @@
 
 use warnings;
 use strict;
-use File::Slurp::Unicode;
 use Getopt::Long;
+use Path::Tiny;
 use POSIX qw(setsid);
 use Sys::Syslog;
 
@@ -37,7 +37,7 @@ sub logger($)
 
 sub get_current_ipv6_state
 {
-  return qx(/usr/sbin/netquery6));
+  qx(/usr/sbin/netquery6);
 }
 
 if ($daemon)
@@ -69,7 +69,7 @@ $SIG{INT} = sub {
 
 while (1)
 {
-  $last_state = join "", read_file $fn_state if -f $fn_state;
+  $last_state = path($fn_state)->slurp_utf8 if -f $fn_state;
   my $current_state = get_current_ipv6_state;
 
   if ($last_state ne $current_state)
@@ -78,7 +78,7 @@ while (1)
     my $rerun = 0;
 
     system "systemctl", "reset-failed", "wide-dhcpv6-on-ipv6-change.service";
-    logger "Detected ipv6 address change. Restarting wide-dhcpv6-client if running.";
+    logger "Detected ipv6 address change. Reloading wide-dhcpv6-client if running.";
     system "systemd-run", "--unit=wide-dhcpv6-on-ipv6-change.service",
         "--setenv=PATH=/usr/sbin:/usr/bin:/sbin:/bin",
         "/bin/sh", "-c", "/bin/systemctl is-active wide-dhcpv6-client.service && ".
@@ -99,10 +99,11 @@ while (1)
           logger "Could not invoke iservchk: $!";
           $rerun= 1;
         };
-    logger "Scheduled rerun during failures." and next if $rerun;
+
+    do { logger "Scheduled rerun during failures."; next } if $rerun;
 
     logger "Updating last known state.";
-    write_file $fn_state, $current_state;
+    path($fn_state)->spew_utf8($current_state);
   }
   else
   {
