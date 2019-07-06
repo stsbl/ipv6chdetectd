@@ -37,7 +37,7 @@ sub logger($)
 
 sub get_current_ipv6_state
 {
-  return join("\n", grep { !/^\s*valid_lft/ } split "\n", qx(/bin/ip -6 addr))."\n";
+  return qx(/usr/sbin/netquery6));
 }
 
 if ($daemon)
