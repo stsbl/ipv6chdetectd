@@ -1,5 +1,5 @@
 MkDir 0755 root:root /var/cache/iserv
 MkDir 0755 root:root /run/ipv6chdetectd
 
-Start ipv6chdetectd
+Start ipv6chdetectd ipv6chdetectd
 
