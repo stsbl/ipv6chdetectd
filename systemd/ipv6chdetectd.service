@@ -1,7 +1,8 @@
 # ipv6chdetectd 
 [Unit]
-Description=Invoke iservchk on IPv6 change
-After=network.target
+Description=Daemon detecting IPv6 address changes
+Wants=network-online.target
+After=wide-dhcpv6-client.service network.target network-online.target
 
 [Service]
 Type=forking

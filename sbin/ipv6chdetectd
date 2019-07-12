@@ -69,8 +69,16 @@ $SIG{INT} = sub {
 
 while (1)
 {
-  $last_state = path($fn_state)->slurp_utf8 if -f $fn_state;
   my $current_state = get_current_ipv6_state;
+
+  if ($current_state eq "")
+  {
+    logger "Sleeping for 30 seconds as no IPv6 addresses (may system boot).";
+    sleep 30;
+    next;
+  }
+
+  my $last_state = path($fn_state)->slurp_utf8 if -f $fn_state;
 
   if ($last_state ne $current_state)
   {
