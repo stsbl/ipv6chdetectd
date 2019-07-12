@@ -1,3 +1,15 @@
+ipv6chdetectd (19.07.12-1) experimental; urgency=medium
+
+  * Updated build rules for webpack support
+  * Reload wide dhcpv6 client instead of restart it
+  * iservchk: Add process name
+  * Replaced ip addr usage by netquery6
+  * Moved to Path::Tiny
+  * Added interface to ipv6 state cache
+  * Wait for wide dhcpv6 client and network
+
+ -- Felix Jacobi <Felix@jacobi-hamburg.net>  Fri, 12 Jul 2019 15:24:04 +0200
+
 ipv6chdetectd (18.05.27-1) experimental; urgency=medium
 
   * Added license
