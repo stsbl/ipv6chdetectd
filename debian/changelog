@@ -1,3 +1,10 @@
+ipv6chdetectd (20.04.23-1) stable; urgency=medium
+
+  * Bumped copyright
+  * Run newhosts as it is not called by iservchk anymore
+
+ -- Felix Jacobi <Felix@jacobi-hamburg.net>  Thu, 23 Apr 2020 02:16:44 +0200
+
 ipv6chdetectd (19.07.12-1) experimental; urgency=medium
 
   * Updated build rules for webpack support
