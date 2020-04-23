@@ -100,13 +100,26 @@ while (1)
 
     system "systemctl", "reset-failed", "iservchk-on-ipv6-change.service";
     logger "Detected ipv6 address change. Invoking 'iservchk -a'.";
-    system "systemd-run", "--unit=iservchk-on-ipv6-change",
+    system "systemd-run", "--unit=iservchk-on-ipv6-change.service",
 	"--setenv=PATH=/usr/sbin:/usr/bin:/sbin:/bin",
         "/bin/sh", "-c", "/usr/sbin/iservchk -a || true"
         and do {
           logger "Could not invoke iservchk: $!";
           $rerun= 1;
         };
+
+    if (-x "/usr/lib/iserv/newhosts")
+    {
+      system "systemctl", "reset-failed", "newhosts-on-ipv6-change.service";
+      logger "Detected ipv6 address change. Invoking '/usr/lib/iserv/newhosts'.";
+      system "systemd-run", "--unit=newhosts-on-ipv6-change.service",
+	  "--setenv=PATH=/usr/sbin:/usr/bin:/sbin:/bin",
+          "/bin/sh", "-c", "/usr/lib/iserv/newhosts || true"
+          and do {
+            logger "Could not invoke newhosts: $!";
+            $rerun= 1;
+          };
+    }
 
     do { logger "Scheduled rerun during failures."; next } if $rerun;
 
