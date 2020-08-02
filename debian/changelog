@@ -1,3 +1,9 @@
+ipv6chdetectd (20.08.02-1) testing; urgency=medium
+
+  * Bumped copyright
+
+ -- Felix Jacobi <Felix@jacobi-hamburg.net>  Sun, 02 Aug 2020 06:29:26 +0200
+
 ipv6chdetectd (20.04.23-1) stable; urgency=medium
 
   * Bumped copyright
