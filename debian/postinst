@@ -1,8 +1,6 @@
 #!/bin/sh
 set -e
 
-mkdir -p /run/ipv6chdetectd || true
-chmod 0755 /run/ipv6chdetectd
-chown root:root /run/ipv6chdetectd
+install -d -m 0700 -o root -g root /var/lib/iserv/ipv6chdetectd
 
 #DEBHELPER#

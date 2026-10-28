@@ -1,3 +1,10 @@
+ipv6chdetectd (26.10.28.1) UNRELEASED; urgency=medium
+
+  * Replace polling and full iservchk with debounced netlink/source events.
+  * Add durable package hooks and retry failed daemon configuration application.
+
+ -- Stadtteilschule Blankenese <repository@stsbl.de>  Wed, 28 Oct 2026 12:00:00 +0100
+
 ipv6chdetectd (21.08.17.1) stable; urgency=medium
 
   * Switched to git source format

@@ -1,0 +1,6 @@
+#!/bin/sh
+# The worker also consumes kernel events; explicit notifications cover final
+# ifupdown configuration state without blocking interface startup/shutdown.
+if [ -x /usr/sbin/ipv6chdetectd ]; then
+  /usr/sbin/ipv6chdetectd --notify || true
+fi

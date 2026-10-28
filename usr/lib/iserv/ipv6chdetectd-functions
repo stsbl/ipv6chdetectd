@@ -1,0 +1,39 @@
+# Shared declarations for /usr/lib/iserv/ipv6chdetectd.d package hooks.
+# Hooks execute twice: prepare may update prerequisites; configure registers
+# files and service actions, which the worker deduplicates and applies.
+ipv6_request()
+{
+  /usr/lib/iserv/ipv6chdetectd/request "$@"
+}
+ipv6_config() { ipv6_request config "$@"; }
+ipv6_watch() { ipv6_request watch "$@"; }
+ipv6_validate() { ipv6_request validate "$@"; }
+ipv6_action() { ipv6_request action "$@"; }
+ipv6_state() { ipv6_request state "$@"; }
+ipv6_remove() { ipv6_request remove "$@"; }
+ipv6_always() { ipv6_request always "$@"; }
+ipv6_requires() { ipv6_request requires "$@"; }
+# Empty output (status 1) is valid. Query errors must never stop daemons or
+# remove configurations as though the network had lost all its addresses.
+ipv6_has_addresses()
+{
+  if netquery6 -gulq; then
+    return 0
+  else
+    ipv6_query_status=$?
+  fi
+  [ "$ipv6_query_status" -ne 1 ] || return 1
+  echo "netquery6 failed with status $ipv6_query_status" >&2
+  exit "$ipv6_query_status"
+}
+ipv6_query()
+{
+  if netquery6 "$@"; then
+    return 0
+  else
+    ipv6_query_status=$?
+  fi
+  [ "$ipv6_query_status" -ne 1 ] || return 0
+  echo "netquery6 failed with status $ipv6_query_status" >&2
+  exit "$ipv6_query_status"
+}

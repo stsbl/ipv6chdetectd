@@ -1,0 +1,8 @@
+# Sourced by dhcpcd-run-hooks. Queue work after IPv6 and carrier transitions.
+case "${reason:-}" in
+  BOUND6|RENEW6|REBIND6|REBOOT6|DEPREF6|EXPIRE6|RELEASE6|STOP6|DELEGATED6|ROUTERADVERT|CARRIER|NOCARRIER|STOPPED)
+    if [ -x /usr/sbin/ipv6chdetectd ]; then
+      /usr/sbin/ipv6chdetectd --notify || true
+    fi
+    ;;
+esac

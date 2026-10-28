@@ -1,15 +1,15 @@
-# ipv6chdetectd 
 [Unit]
-Description=Daemon detecting IPv6 address changes
-Wants=network-online.target
-After=wide-dhcpv6-client.service network.target network-online.target
+Description=Apply IPv6 configuration changes through package hooks
+After=network.target
 
 [Service]
-Type=forking
-RemainAfterExit=yes
-SyslogIdentifier=ipv6chdetectd
-PIDFile=/run/ipv6chdetectd/pid
-ExecStart=/usr/sbin/ipv6chdetectd -d
+Type=simple
+ExecStart=/usr/sbin/ipv6chdetectd
+Restart=on-failure
+RestartSec=3
+StateDirectory=iserv/ipv6chdetectd
+StateDirectoryMode=0700
+Environment=PATH=/usr/sbin:/usr/bin:/sbin:/bin
 
 [Install]
 WantedBy=multi-user.target

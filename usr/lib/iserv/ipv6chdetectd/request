@@ -1,0 +1,8 @@
+#!/usr/bin/python3
+"""Append one argv-safe declaration to the current package hook manifest."""
+import json
+import os
+import sys
+
+with open(os.environ['IPV6CHDETECTD_REQUESTS'], 'a') as stream:
+    stream.write(json.dumps(sys.argv[1:]) + '\n')

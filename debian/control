@@ -9,12 +9,22 @@ Homepage: https://it.stsbl.de/
 Package: ipv6chdetectd
 Architecture: all
 Depends: iserv-update,
-         libpath-tiny-perl,
-         stsbl-iserv-config-ipv6 (>= 19.07.06),
+         python3:any,
          ${misc:Depends},
          ${perl:Depends}
+Breaks: stsbl-iserv-dns-over-tls-tunnel (<< 26.10.28.1),
+        stsbl-iserv-config-ipv6 (<< 26.10.28.1),
+        stsbl-iserv-ipv6-support (<< 26.10.28.1),
+        stsbl-iserv-dns-ula (<< 26.10.28.1),
+        stsbl-iserv-server-radvd (<< 26.10.28.1),
+        stsbl-iserv-server-dhcpy6d (<< 26.10.28.1),
+        stsbl-iserv-dns-over-tls (<< 26.10.28.1),
+        stsbl-iserv-radius-based-vlan (<< 26.10.28.1),
+        stsbl-iserv-server-all-knowing-dns (<< 26.10.28.1),
+        stsbl-iserv-server-tayga (<< 26.10.28.1),
+        stsbl-iserv-vpn-ipv6 (<< 26.10.28.1)
 Xb-Private-Iserv-Revision: ${iserv:Revision}
 Description: IPv6 change detection daemon
- IPv6 change detection daemon is a daemon which runs iservchk everytime when
- IPv6 addresses change.
+ Collects IPv6 network events and configuration-source notifications, then
+ applies changed configuration through debounced package hooks.
 Tag: suite::iserv, implemented-in::perl

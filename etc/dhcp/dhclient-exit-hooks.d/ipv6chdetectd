@@ -1,0 +1,8 @@
+# Sourced by dhclient-script; never exit or wait for configuration hooks here.
+case "${reason:-}" in
+  BOUND6|RENEW6|REBIND6|REBOOT6|DEPREF6|EXPIRE6|RELEASE6|STOP6)
+    if [ -x /usr/sbin/ipv6chdetectd ]; then
+      /usr/sbin/ipv6chdetectd --notify || true
+    fi
+    ;;
+esac

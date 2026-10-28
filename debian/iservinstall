@@ -1,1 +1,4 @@
 LICENSE* usr/share/doc/ipv6chdetectd
+X:tests/*
+X:doc/*
+X:**/__pycache__/*
