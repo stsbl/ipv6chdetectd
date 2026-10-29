@@ -60,6 +60,7 @@ def serve(directory=STATE, hooks_dir=HOOKS, debounce=3, monitor=True):
         signal.signal(signal.SIGTERM, stop)
         signal.signal(signal.SIGINT, stop)
         worker = None
+        worker_started = None
         retry_at = 0
         retry_delay = 3
         filter_events = NetlinkFilter()
@@ -91,17 +92,21 @@ def serve(directory=STATE, hooks_dir=HOOKS, debounce=3, monitor=True):
                     if worker is not None and worker.poll() is not None:
                         success = worker.returncode == 0
                         queue.finish(success)
+                        elapsed = time.monotonic() - worker_started
                         if success:
+                            LOG.info('[pass] Completed in %.2fs; %s', elapsed,
+                                     'more events queued' if queue.pending.exists() else 'queue empty')
                             retry_delay = 3
                             retry_at = 0
                         else:
                             retry_at = time.monotonic() + retry_delay
-                            LOG.error('Hook pass failed; retry in %s seconds', retry_delay)
+                            LOG.error('[pass] Failed after %.2fs; retry in %s seconds', elapsed, retry_delay)
                             retry_delay = min(retry_delay * 2, 60)
                         worker = None
                     if worker is None and queue.ready() and time.monotonic() >= retry_at:
                         queue.claim()
-                        LOG.info('Applying collected IPv6 changes')
+                        worker_started = time.monotonic()
+                        LOG.info('[pass] Starting collected IPv6 update')
                         try:
                             worker = subprocess.Popen(
                                 [sys.executable, __file__, '--run-hooks', '--state-dir', str(directory),

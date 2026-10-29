@@ -45,6 +45,31 @@ A service name starting with `@` identifies an operation without a systemd unit.
 
 The runner persists application intent before writing configurations. It validates after all files have been generated and records the exact pre-action input snapshot only after successful application. A failed reload/restart remains pending even when the files already contain the desired data. A later change during application is detected in the next batch. Commands have a five-minute limit, and timeout/shutdown terminates their helper process groups before another pass can run.
 
+## Journal output
+
+Each pass logs its start and completion, the package hooks being run, changed
+configuration targets, validations and daemon actions. A summary reports checked
+and updated targets, applied actions, unchanged consumers and deferred work.
+Successful child-command output is suppressed, including verbose configuration
+checks. Failed commands retain their diagnostics, with every line labelled by
+its hook, target or service. Explicit ERROR/FATAL/CRITICAL diagnostics are also
+retained when a tool returns success. Generated configuration content is never
+copied into the journal. Deferred applications remain pending for retry.
+
+Example:
+
+```text
+INFO: [pass] Starting collected IPv6 update
+INFO: [config] Checking 40 targets for 21 consumers
+INFO: [config /etc/nginx/server-iserv] Updating for nginx.service
+INFO: [validate nginx.service] Checking configuration
+INFO: [validate nginx.service] Configuration valid
+INFO: [apply nginx.service] Reload requested
+INFO: [apply nginx.service] Completed successfully
+INFO: [summary] 40 targets checked, 1 updated, 1 actions applied, 20 consumers unchanged, 0 deferred
+INFO: [pass] Completed in 1.40s; queue empty
+```
+
 ## Consumers and ownership
 
 Official IServ checkouts stay unchanged. `stsbl-iserv-config-ipv6` supplies guarded compatibility hooks for base-system packages: SSH, BIND, Exim, SpamAssassin, ferm, PuTTY nginx rules and PHP-FPM configuration readers. `stsbl-iserv-ipv6-support` supplies portal compatibility for nginx, Squid/squid-block, BIND address data, WLAN FreeRADIUS clients, Matrix and Samba. Its preparation hooks synchronize LAN and external-IP settings and host data before dependent generation; automatic-update settings remain respected. PHP-FPM's existing reload propagation applies generated PHP configuration to the running versioned units.

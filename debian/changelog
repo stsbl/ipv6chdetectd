@@ -1,5 +1,7 @@
 ipv6chdetectd (26.10.28.1) UNRELEASED; urgency=medium
 
+  * Describe hook phases, changed files and daemon application in the journal.
+  * Suppress successful configuration-check output and label error diagnostics.
   * Replace polling and full iservchk with debounced netlink/source events.
   * Add durable package hooks and retry failed daemon configuration application.
 
