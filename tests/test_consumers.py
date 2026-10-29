@@ -10,7 +10,7 @@ REPO = Path(__file__).resolve().parents[1]
 WORKSPACE = REPO.parent
 
 class ConsumersTest(unittest.TestCase):
-    def collect(self, package, installed):
+    def collect(self, package, installed, bind_files=None):
         if not (WORKSPACE / package).is_dir():
             self.skipTest('consumer integration requires sibling source checkout: ' + package)
         hook = WORKSPACE / package / 'lib/ipv6chdetectd.d' / {'stsbl-iserv-config-ipv6': '40config-ipv6', 'stsbl-iserv-ipv6-support': '50ipv6-support', 'stsbl-iserv-dns-over-tls': '60dns-over-tls'}[package]
@@ -23,7 +23,17 @@ class ConsumersTest(unittest.TestCase):
             cfg = root / 'cfg'
             cfg.write_text('UpdateIPv6LAN=\nUpdateIPv6Regdns=\nDHCP="*"\n')
             script = root / 'script'
-            script.write_text(hook.read_text().replace('/usr/lib/iserv/ipv6chdetectd-functions', str(functions)).replace('/usr/lib/iserv/cfg', str(cfg)))
+            source = hook.read_text().replace('/usr/lib/iserv/ipv6chdetectd-functions', str(functions)).replace('/usr/lib/iserv/cfg', str(cfg))
+            if bind_files is not None:
+                bind = root / 'bind'
+                bind.mkdir()
+                for name in bind_files:
+                    (bind / name).write_text('historical or active zone fixture')
+                source = source.replace('/etc/bind', str(bind))
+                query = root / 'netquery6'
+                query.write_text('#!/bin/sh\necho enp4s0\n')
+                query.chmod(0o755)
+            script.write_text(source)
             command = root / 'iservpkginstalled'
             command.write_text('#!/bin/sh\ncase "$1" in\n' + '|'.join(installed or ['NONE']) + ') exit 0;;\n*) exit 1;; esac\n')
             command.chmod(0o755)
@@ -54,6 +64,24 @@ class ConsumersTest(unittest.TestCase):
     def test_restricted_tls_listener_updates_without_optional_tunnel_package(self):
         records = self.collect('stsbl-iserv-dns-over-tls', ['stunnel4'])
         self.assertTrue(any('/etc/stunnel/iserv-dns-over-tls.conf' in r for r in records))
+
+    def test_bind_backup_files_are_never_registered_as_live_zones(self):
+        backups = [
+            'db.iserv.20190208', 'db.forward.20190208-1',
+            'db.iserv.fallback.20260827-23', 'db.forward.enp4s0.20261029',
+            'db.iserv.20190208-1.20261029', 'db.forward.enp4s0.bak',
+            'db.iserv.enp4s0.orig', 'db.forward.enp4s0.dpkg-old',
+        ]
+        active = ['db.iserv.enp4s0', 'db.forward.enp4s0',
+                  'db.iserv.removed0', 'db.forward.removed0']
+        records = self.collect('stsbl-iserv-ipv6-support',
+                               ['iserv-portal', 'iserv-server-bind'],
+                               bind_files=backups + active)
+        paths = {Path(path).name for record in records if record[0] == 'config'
+                 for path in record[3:]}
+        self.assertTrue(set(active).issubset(paths))
+        self.assertTrue(set(backups).isdisjoint(paths), paths.intersection(backups))
+        self.assertLess(len(paths), 15, 'historical zone backups expanded the work batch')
 
 if __name__ == '__main__':
     unittest.main()
