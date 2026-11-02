@@ -21,7 +21,8 @@ The versions below are unreleased changelog versions, not published releases.
 
 ## Release gates and order
 
-- [ ] Provide radvd >= `1:2.20` for supported systems before releasing dns-ula.
+- [ ] Publish radvd/radvdump `1:2.20-1~stsblbpo12+1` (or compatible newer packages)
+  for supported systems before releasing dns-ula.
   The static `autoignoreprefixes` exclusion is unsupported by 2.19. dns-ula declares
   a versioned Breaks; do not bypass it or add the syntax to a running 2.19 system.
 - [ ] Review and merge all eleven feature branches, including daemon logging,
@@ -71,3 +72,13 @@ been uploaded to a package repository. The production router was not changed.
 The initial audit found no open code changes. Existing radvd POT header churn
 and an untracked generated Makefile in all-knowing-dns are build artifacts and
 are preserved rather than included as release changes.
+
+The VM had an iconf patch commenting out the DNS route. The new filter makes it
+redundant, and keeping it caused a patch conflict. The patch and previous config
+were archived in `/var/tmp/ipv6-radvd-migration-20261102/`. The hook worker then
+regenerated `/etc/radvd.conf`, validated it and reloaded radvd successfully:
+52 targets checked, one updated, two actions applied, zero deferred consumers.
+Both LAN blocks retain RDNSS and wildcard prefixes, with the anycast exclusion;
+no active DNS route block remains. Pending application state was empty, both
+services were active, and `dpkg --audit` was clean. Upstream network events still
+queue further passes; no idle-queue claim is made.
